@@ -34,8 +34,10 @@ public class PessoaHandler implements HttpHandler {
             } else if(method.equals("GET") && uri.getQuery() != null){
                 buscarPorTermo(exchange);
 
-            } else if(method.equals("GET") && uri.getPath().split("/")[2] != null){
+            } else if(method.equals("GET") && uri.getPath().split("/").length > 2){
                 buscarPorId(exchange);
+            } else {
+                throw new InvalidQueryParam();
             }
         } catch (PessoaNotFound e){
             OutputStream responseStream = exchange.getResponseBody();
