@@ -86,10 +86,9 @@ public class PessoaHandler implements HttpHandler {
             }
         }
 
-        if(splitComma[3].contains("stack")){
-            stack = removeInvalidCharsStack(splitComma[3]);
+        if(body.contains("stack")){
+            stack = removeInvalidCharsStack(body);
         }
-
 
         Objects.requireNonNull(apelido);
         Objects.requireNonNull(nome);
@@ -142,13 +141,12 @@ public class PessoaHandler implements HttpHandler {
     }
 
     private String removeInvalidChars(String text){
-        String rawText = text.split("\"")[3];
-        return rawText.substring(0, rawText.length() - 2);
+        return text.split("\"")[3];
     }
 
     private String removeInvalidCharsStack(String text){
-        String rawText = text.split("\\[")[1];
-        return "[" + rawText.substring(0, rawText.length() - 1);
+        String rawText = text.split("\\[")[1].split("\\]")[0];
+        return "[" + rawText + "]";
     }
 
 }
