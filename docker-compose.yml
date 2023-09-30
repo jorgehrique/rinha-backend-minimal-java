@@ -1,0 +1,67 @@
+version: '3.8'
+services:
+  api1: # API - Instância 01
+    image: jorgehrique/rinha-backend-java:0.0.1
+    container_name: api1
+    depends_on:
+      - db
+    command:
+      - api1
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '500M'
+
+  api2: # API - Instância 02
+    image: jorgehrique/rinha-backend-java:0.0.1
+    container_name: api2
+    depends_on:
+      - db
+    command:
+      - api2
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '500M'
+
+  nginx: # Load Balancer
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api1
+      - api2
+    ports:
+      - "9999:9999"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '500M'
+
+  db: # Banco de dados
+    image: postgres
+    container_name: db
+    environment:
+      POSTGRES_USER: rinhaUser
+      POSTGRES_PASSWORD: rinhaPass
+      POSTGRES_DB: PESSOADB
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: '1500M'
+
+#  pgadmin: ## for debug only
+#    image: dpage/pgadmin4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: "rinha@rinha.com"
+#      PGADMIN_DEFAULT_PASSWORD: "rinha"
+#    ports:
+#      - "16543:80"
+#    depends_on:
+#      - db
