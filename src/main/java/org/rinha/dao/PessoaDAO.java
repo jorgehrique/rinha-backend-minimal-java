@@ -66,18 +66,10 @@ public class PessoaDAO {
     public List<Pessoa> buscarPessoasPorTermo(String termo) throws SQLException {
         this.openConnection();
 
-        termo = "%" + termo + "%";
-
-        String sql = "SELECT * FROM TB_PESSOA WHERE (" +
-                "APELIDO LIKE ? " +
-                "OR NOME LIKE ? " +
-                "OR STACK LIKE ?" +
-        ")";
+        String sql = "SELECT * FROM TB_PESSOA WHERE TERMO_SEARCH LIKE ?";
 
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setString(1, termo);
-        statement.setString(2, termo);
-        statement.setString(3, termo);
 
         ResultSet rs = statement.executeQuery();
         List<Pessoa> pessoas = new ArrayList<>();
