@@ -7,19 +7,26 @@ import org.rinha.exceptions.InvalidQueryParam;
 import org.rinha.exceptions.PessoaNotFound;
 import org.rinha.services.PessoaService;
 
+import javax.swing.text.DateFormatter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 
 public class PessoaHandler implements HttpHandler {
 
     private final PessoaService pessoaService;
 
+    private final DateTimeFormatter dateTimeFormatter;
+
     public PessoaHandler() throws ClassNotFoundException {
         this.pessoaService = new PessoaService();
+        dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     }
 
     @Override
@@ -85,6 +92,7 @@ public class PessoaHandler implements HttpHandler {
             }
             if(line.contains("nascimento")){
                 nascimento = removeInvalidChars(line);
+                dateTimeFormatter.parse(nascimento);
             }
         }
 
