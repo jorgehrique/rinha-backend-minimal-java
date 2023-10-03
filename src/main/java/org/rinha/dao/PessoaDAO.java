@@ -19,13 +19,13 @@ public class PessoaDAO {
         Class.forName("org.postgresql.Driver");
     }
 
-    public void cadastrarPessoa(String uuid, String apelido, String nome, String nascimento, String stack)
-            throws SQLException {
-        this.openConnection();
+    public void cadastrarPessoa(String uuid, String apelido, String nome, String nascimento, String stack) {
+        try {
+            this.openConnection();
 
-        String sql = "INSERT INTO TB_PESSOA VALUES(?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO TB_PESSOA VALUES(?, ?, ?, ?, ?)";
 
-        PreparedStatement statement = connection.prepareStatement(sql);
+            PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, uuid);
             statement.setString(2, apelido);
             statement.setString(3, nome);
@@ -33,7 +33,10 @@ public class PessoaDAO {
             statement.setString(5, stack);
             statement.executeUpdate();
 
-        statement.close();
+            statement.close();
+        } catch (SQLException e) {
+            // Erro sql
+        }
     }
 
     public Pessoa buscarPessoaPorId(String id) throws SQLException {
