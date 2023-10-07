@@ -7,26 +7,22 @@ import org.rinha.exceptions.InvalidQueryParam;
 import org.rinha.exceptions.PessoaNotFound;
 import org.rinha.services.PessoaService;
 
-import javax.swing.text.DateFormatter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class PessoaHandler implements HttpHandler {
 
     private final PessoaService pessoaService;
 
-    private final DateTimeFormatter dateTimeFormatter;
-
     public PessoaHandler() throws ClassNotFoundException {
         this.pessoaService = new PessoaService();
-        dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     }
 
     @Override
@@ -66,7 +62,7 @@ public class PessoaHandler implements HttpHandler {
         }
     }
 
-    private void cadastrarPessoa(HttpExchange exchange) throws IOException, SQLException {
+    private void cadastrarPessoa(HttpExchange exchange) throws IOException {
         InputStream bodyStream = exchange.getRequestBody();
         String body = new String(bodyStream.readAllBytes());
 
@@ -91,13 +87,25 @@ public class PessoaHandler implements HttpHandler {
                 }
             }
             if(line.contains("nascimento")){
-                nascimento = removeInvalidChars(line);
-                dateTimeFormatter.parse(nascimento);
+                nascimento = LocalDate
+                        .parse(removeInvalidChars(line), DateTimeFormatter.ISO_LOCAL_DATE)
+                        .toString();
             }
         }
 
         if(body.contains("stack")){
             stack = removeInvalidCharsStack(body);
+            if(stack != null){
+                boolean invalidElement = Arrays.stream(stack.replace("[", "")
+                        .replace("]", "")
+                        .split(","))
+                        .anyMatch(string -> string.length() > 34 || !string.contains("\""));
+
+                if(invalidElement ||
+                        (!stack.contains(",") && (stack.length() > 36 || !stack.contains("\"")))){
+                    throw new InvalidBodyException("Stack invalida");
+                }
+            }
         }
 
         Objects.requireNonNull(apelido);
@@ -151,12 +159,24 @@ public class PessoaHandler implements HttpHandler {
     }
 
     private String removeInvalidChars(String text){
-        return text.split("\"")[3];
+        try {
+            return text.split("\"")[3];
+        } catch (IndexOutOfBoundsException e){
+            throw new InvalidBodyException("Invalid String: " + text);
+        }
     }
 
     private String removeInvalidCharsStack(String text){
-        String rawText = text.split("\\[")[1].split("\\]")[0];
-        return "[" + rawText + "]";
+        try {
+            String rawText = text.split("\\[")[1].split("\\]")[0];
+            return "[" + rawText + "]";
+        } catch (IndexOutOfBoundsException e){
+            if(!text.split("\"stack\":")[1].contains("null")) {
+                throw new InvalidBodyException("Invalid stack");
+            }
+
+            return null;
+        }
     }
 
 }
